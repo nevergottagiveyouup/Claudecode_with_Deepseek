@@ -157,6 +157,28 @@ class App:
         self._on = False
         self._mode = "direct"
 
+        # --- Top bar ---
+        top_bar = tk.Frame(self.root, bg="#e8e8e8", height=26)
+        top_bar.pack(fill="x")
+        top_bar.pack_propagate(False)
+
+        self._bar_dot = tk.Label(top_bar, text="●", font=("Segoe UI", 8),
+                                 bg="#e8e8e8", cursor="hand2")
+        self._bar_dot.pack(side=tk.LEFT, padx=(8, 2))
+        self._bar_label = tk.Label(top_bar, text="API Key: not set",
+                                   font=("Segoe UI", 8), bg="#e8e8e8", fg="#666", cursor="hand2")
+        self._bar_label.pack(side=tk.LEFT)
+
+        edit_btn = tk.Button(top_bar, text="Edit", font=("Segoe UI", 8), relief="flat",
+                             bg="#e0e0e0", activebackground="#ccc", cursor="hand2",
+                             command=self._open_settings, padx=6)
+        edit_btn.pack(side=tk.RIGHT, padx=(0, 4), pady=2)
+
+        for w in (top_bar, self._bar_dot, self._bar_label):
+            w.bind("<Button-1>", lambda e: self._open_settings())
+
+        self._refresh_bar()
+
         # --- Mode selector ---
         tk.Label(self.root, text="Connection Mode:", font=("Segoe UI", 9)).pack(pady=(12, 2))
         mode_frame = tk.Frame(self.root)
@@ -195,9 +217,6 @@ class App:
                              width=16, height=1, command=self.toggle, state=tk.DISABLED)
         self.btn.pack(pady=14)
 
-        tk.Button(self.root, text="Settings", font=("Segoe UI", 9),
-                  command=self._open_settings, width=10).pack(pady=(0, 8))
-
         # --- System Status ---
         status_frame = tk.LabelFrame(self.root, text="System Status", font=("Segoe UI", 8), padx=6, pady=4)
         status_frame.pack(fill="x", padx=12, pady=(0, 8))
@@ -210,7 +229,14 @@ class App:
 
         self._on_mode_change()
         self.root.after(300, lambda: self.btn.config(state=tk.NORMAL))
-        self.root.after(500, self._check_api_key)
+
+    def _refresh_bar(self):
+        if get_api_key():
+            self._bar_dot.config(fg="#2e7d32")
+            self._bar_label.config(text="API Key configured", fg="#333")
+        else:
+            self._bar_dot.config(fg="#c62828")
+            self._bar_label.config(text="API Key not set", fg="#c62828")
 
     def _open_settings(self):
         dlg = tk.Toplevel(self.root)
@@ -253,10 +279,7 @@ class App:
                   command=do_save).pack()
 
         dlg.wait_window()
-
-    def _check_api_key(self):
-        if not get_api_key():
-            self._open_settings()
+        self._refresh_bar()
 
     def _on_mode_change(self, *args):
         was_on = self._on
