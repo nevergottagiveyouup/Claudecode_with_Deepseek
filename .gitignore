@@ -1,4 +1,3 @@
 config.json
-litellm_config.yaml.tmp
 __pycache__/
 *.pyc
