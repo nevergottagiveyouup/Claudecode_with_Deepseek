@@ -3,17 +3,38 @@ import subprocess
 import os
 import time
 import sys
+import json
 import winreg
 import threading
 import atexit
 
 LITELLM_PATH = r"C:\Users\34967\AppData\Roaming\Python\Python313\Scripts\litellm.exe"
 CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "litellm_config.yaml")
-DEEPSEEK_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+CONFIG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
 MASTER_KEY = "sk-litellm-master-key"
 DS_ANTHROPIC_URL = "https://api.deepseek.com/anthropic"
 LOCAL_URL = "http://localhost:4000"
 REG_PATH = r"Environment"
+
+
+def load_config():
+    if os.path.exists(CONFIG_FILE):
+        try:
+            with open(CONFIG_FILE, 'r') as f:
+                return json.load(f)
+        except:
+            pass
+    return {}
+
+
+def save_config(cfg):
+    with open(CONFIG_FILE, 'w') as f:
+        json.dump(cfg, f, indent=2)
+
+
+def get_api_key():
+    cfg = load_config()
+    return cfg.get("api_key", "") or os.environ.get("DEEPSEEK_API_KEY", "")
 
 PROXY_MODELS = {
     "V4 Flash (Fast)":   {"ds": "deepseek/deepseek-v4-flash",   "cc": "claude-sonnet-4-6"},
@@ -53,7 +74,7 @@ def is_proxy_running():
 
 def set_direct_vars(model_id, thinking=False):
     for k, v in [("ANTHROPIC_BASE_URL", DS_ANTHROPIC_URL),
-                 ("ANTHROPIC_AUTH_TOKEN", DEEPSEEK_KEY),
+                 ("ANTHROPIC_AUTH_TOKEN", get_api_key()),
                  ("ANTHROPIC_MODEL", model_id)]:
         _set_reg(k, v)
     if thinking:
@@ -99,6 +120,17 @@ ALL_KEYS = ["ANTHROPIC_BASE_URL", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_MODEL",
             "CLAUDE_CODE_EFFORT_LEVEL", "ANTHROPIC_DEFAULT_OPUS_MODEL", "ANTHROPIC_DEFAULT_SONNET_MODEL"]
 
 
+def write_litellm_config():
+    api_key = get_api_key()
+    with open(CONFIG, 'r') as f:
+        content = f.read()
+    content = content.replace("YOUR_DEEPSEEK_API_KEY", api_key)
+    tmp = CONFIG + ".tmp"
+    with open(tmp, 'w') as f:
+        f.write(content)
+    return tmp
+
+
 def clear_all_vars():
     try:
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER, REG_PATH, 0, winreg.KEY_SET_VALUE) as r:
@@ -117,7 +149,7 @@ class App:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("DeepSeek Proxy")
-        self.root.geometry("300x340")
+        self.root.geometry("300x370")
         self.root.resizable(False, False)
         self.root.protocol("WM_DELETE_WINDOW", self.on_exit)
         atexit.register(self._cleanup)
@@ -173,8 +205,58 @@ class App:
         self.status_extra = tk.Label(status_frame, text="Effort: -", font=("Consolas", 8), fg="#666", anchor="w", justify="left")
         self.status_extra.pack(fill="x")
 
+        tk.Button(self.root, text="Settings", font=("Segoe UI", 8),
+                  command=self._open_settings).pack(pady=(0, 4))
+
         self._on_mode_change()
         self.root.after(300, lambda: self.btn.config(state=tk.NORMAL))
+        self.root.after(500, self._check_api_key)
+
+    def _open_settings(self):
+        dlg = tk.Toplevel(self.root)
+        dlg.title("Settings")
+        dlg.geometry("380x200")
+        dlg.resizable(False, False)
+        dlg.transient(self.root)
+        dlg.grab_set()
+
+        tk.Label(dlg, text="DeepSeek API Key:", font=("Segoe UI", 10)).pack(pady=(16, 4))
+
+        key_frame = tk.Frame(dlg)
+        key_frame.pack(pady=(0, 8))
+        key_var = tk.StringVar(value=get_api_key())
+        self._key_entry = tk.Entry(key_frame, textvariable=key_var, show="*",
+                                   font=("Consolas", 10), width=36)
+        self._key_entry.pack(side=tk.LEFT, padx=(0, 2))
+        show_var = tk.BooleanVar(value=False)
+
+        def toggle_show():
+            self._key_entry.config(show="" if show_var.get() else "*")
+
+        tk.Checkbutton(key_frame, text="Show", variable=show_var, command=toggle_show,
+                       font=("Segoe UI", 8)).pack(side=tk.LEFT)
+
+        status = tk.Label(dlg, text="", font=("Segoe UI", 9), fg="gray")
+        status.pack(pady=(2, 6))
+
+        def do_save():
+            key = key_var.get().strip()
+            if not key:
+                status.config(text="Key cannot be empty", fg="#c62828")
+                return
+            save_config({"api_key": key})
+            status.config(text="Saved successfully", fg="#2e7d32")
+
+        btn_frame = tk.Frame(dlg)
+        btn_frame.pack(pady=(0, 12))
+        tk.Button(btn_frame, text="Save", font=("Segoe UI", 10), width=10,
+                  command=do_save).pack()
+
+        dlg.wait_window()
+
+    def _check_api_key(self):
+        if not get_api_key():
+            self._open_settings()
 
     def _on_mode_change(self, *args):
         was_on = self._on
@@ -293,10 +375,11 @@ class App:
         threading.Thread(target=run, daemon=True).start()
 
     def _start_litellm(self):
+        config_path = write_litellm_config()
         env = os.environ.copy()
-        env['DEEPSEEK_API_KEY'] = DEEPSEEK_KEY
+        env['DEEPSEEK_API_KEY'] = get_api_key()
         subprocess.Popen(
-            [LITELLM_PATH, '--config', CONFIG, '--port', '4000'],
+            [LITELLM_PATH, '--config', config_path, '--port', '4000'],
             env=env, creationflags=subprocess.CREATE_NO_WINDOW
         )
 

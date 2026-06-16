@@ -4,7 +4,7 @@
 
 ## 软件优势
 
-- **零配置启动**：双击 `main.pyw` 即用，无需命令行操作
+- **零配置启动**：首次运行在弹出的设置框中输入 DeepSeek API Key 后即用，Key 保存在本地 `config.json`
 - **双模式灵活切换**：Direct 直连（零延迟，完整功能）+ Proxy 代理（LiteLLM 协议翻译，兼容性好）
 - **自动环境管理**：程序负责注册表 + setx 双重写入，退出自动清理，不留残留
 - **UI 不卡顿**：所有耗时操作（进程管理、环境变量写入）均放入后台线程，tkinter 主线程保持响应
@@ -24,9 +24,10 @@
 ## 快速开始
 
 1. 双击 `main.pyw`
-2. 选择**连接模式**：Direct（直连）或 Proxy（代理）
-3. 选择**模型**：V4 Flash / V4 Pro / Flash+Think(R1)
-4. 点击 **Turn ON**
+2. 首次运行会弹出设置框，输入 **DeepSeek API Key** 并保存
+3. 选择**连接模式**：Direct（直连）或 Proxy（代理）
+4. 选择**模型**：V4 Flash / V4 Pro / Flash+Think(R1)
+5. 点击 **Turn ON**
 
 ## 两种模式
 
@@ -139,11 +140,21 @@ Claude Code  ────→ localhost:4000 (LiteLLM) ────→ api.deepse
 - tkinter（Python 自带）
 - LiteLLM（仅 Proxy 模式需要，`pip install litellm[proxy]`）
 
+## 配置
+
+API Key 通过 Settings 按钮或首次启动弹窗配置，保存在 `config.json`（已加入 `.gitignore`，不会被提交）。
+
+程序读取 Key 的优先级：`config.json` > `DEEPSEEK_API_KEY` 环境变量。配置后即可在 Settings 中随时修改。
+
+Proxy 模式启动时会动态将 Key 注入 `litellm_config.yaml` 生成临时配置，关闭后临时文件丢弃。
+
 ## 文件结构
 
 ```
 deepseek-proxy-gui/
 ├── main.pyw             # 主程序（双击运行）
-├── litellm_config.yaml  # LiteLLM 代理配置文件
+├── litellm_config.yaml  # LiteLLM 代理配置模板（Key 占位符）
+├── config.json          # 用户配置（API Key 等，不提交到 Git）
+├── .gitignore           # Git 忽略规则
 └── README.md            # 本文件
 ```
