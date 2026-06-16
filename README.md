@@ -4,7 +4,7 @@
 
 ## 软件优势
 
-- **零配置启动**：首次运行在弹出的设置框中输入 DeepSeek API Key 后即用，Key 保存在本地 `config.json`
+- **零配置启动**：顶部状态栏实时显示 API Key 配置状态（绿点/红点），点按即设置，Key 保存在本地 `config.json`
 - **双模式灵活切换**：Direct 直连（零延迟，完整功能）+ Proxy 代理（LiteLLM 协议翻译，兼容性好）
 - **自动环境管理**：程序负责注册表 + setx 双重写入，退出自动清理，不留残留
 - **UI 不卡顿**：所有耗时操作（进程管理、环境变量写入）均放入后台线程，tkinter 主线程保持响应
@@ -24,7 +24,7 @@
 ## 快速开始
 
 1. 双击 `main.pyw`
-2. 首次运行会弹出设置框，输入 **DeepSeek API Key** 并保存
+2. 点击顶栏 **Edit** 输入 **DeepSeek API Key** 并保存
 3. 选择**连接模式**：Direct（直连）或 Proxy（代理）
 4. 选择**模型**：V4 Flash / V4 Pro / Flash+Think(R1)
 5. 点击 **Turn ON**
@@ -142,9 +142,9 @@ Claude Code  ────→ localhost:4000 (LiteLLM) ────→ api.deepse
 
 ## 配置
 
-API Key 通过 Settings 按钮或首次启动弹窗配置，保存在 `config.json`（已加入 `.gitignore`，不会被提交）。
+顶栏显示 API Key 状态（绿点已配置 / 红点未配置），点击顶栏或右侧 **Edit** 按钮打开设置弹窗。Key 保存在 `config.json`（已加入 `.gitignore`，不会被提交）。
 
-程序读取 Key 的优先级：`config.json` > `DEEPSEEK_API_KEY` 环境变量。配置后即可在 Settings 中随时修改。
+程序读取 Key 的优先级：`config.json` > `DEEPSEEK_API_KEY` 环境变量。保存后顶栏实时刷新。
 
 Proxy 模式启动时会动态将 Key 注入 `litellm_config.yaml` 生成临时配置，关闭后临时文件丢弃。
 
