@@ -20,7 +20,8 @@
 
 
 ## 快速开始
-![alt text](image.png)
+
+<img src="image.png" width="300">
 
 1. 双击 `main.pyw`
 2. 点击顶栏 **Edit** 输入 **DeepSeek API Key** 并保存
