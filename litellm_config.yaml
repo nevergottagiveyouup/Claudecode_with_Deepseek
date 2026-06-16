@@ -1,0 +1,15 @@
+general_settings:
+  master_key: sk-litellm-master-key
+
+model_list:
+  - model_name: claude-sonnet-4-6
+    litellm_params:
+      model: deepseek/deepseek-v4-flash
+      api_key: "sk-087c21eb85b449bd9cd6e1c3dd333955"
+      api_base: https://api.deepseek.com
+
+  - model_name: claude-opus-4-6
+    litellm_params:
+      model: deepseek/deepseek-v4-pro
+      api_key: "sk-087c21eb85b449bd9cd6e1c3dd333955"
+      api_base: https://api.deepseek.com
