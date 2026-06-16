@@ -11,17 +11,16 @@
 - **安全退出保护**：窗口关闭 + `atexit` 双重保险，确保端口和变量清理
 - **模型级粒度控制**：支持 V4 Flash / V4 Pro / Flash+Think(R1) 三档选择，Direct 模式下 Thin 模式自动设置 EFFORT_LEVEL=max
 
-## 已知使用缺陷
+## 已知使用须知
 
 1. **Claude Code 不动态重读环境变量**：CC 启动时读取环境变量，运行期间不变。开关代理后 CC 不会自动切换后端，需重启 CC
-2. **Proxy 模式 LiteLLM 启动慢**：首次启动需 10-15 秒绑定 4000 端口，UI 会显示 "Starting..." 等待
-3. **Proxy 模式内存占用高**：LiteLLM 1.87 在 Windows 上启动峰值内存 500MB+
-4. **切换模式时 CC 会断连**：Proxy 模式关闭或切换到 Direct 都会导致已运行的 CC 断连，需等待 30 秒+ 自动重试或 Ctrl+C 重进
-5. **Direct 模式 V4 Flash 默认开启 thinking**：小请求可能 thinking tokens 吃满导致无文本输出，建议小任务用 Pro 或关闭 thinking
-6. **仅支持 Windows**：依赖 `winreg` 注册表操作和 `taskkill` 进程管理
-7. **关闭代理时 VS Code 插件跳转登录页**：环境变量清除后 VS Code 中的 CC 插件自动回退 Anthropic 原生 API，触发登录
+2. **Proxy 模式内存占用**：LiteLLM 1.87 在 Windows 上启动峰值内存 500MB+
+3. **切换模式时 CC 会断连**：Proxy 模式关闭或切换到 Direct 都会导致已运行的 CC 断连，需等待 30 秒+ 自动重试或 Ctrl+C 重进
+4. **仅支持 Windows**：依赖 `winreg` 注册表操作和 `taskkill` 进程管理
+
 
 ## 快速开始
+![alt text](image.png)
 
 1. 双击 `main.pyw`
 2. 点击顶栏 **Edit** 输入 **DeepSeek API Key** 并保存
