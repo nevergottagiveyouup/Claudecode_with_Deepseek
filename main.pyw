@@ -149,7 +149,7 @@ class App:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("DeepSeek Proxy")
-        self.root.geometry("300x370")
+        self.root.geometry("300x390")
         self.root.resizable(False, False)
         self.root.protocol("WM_DELETE_WINDOW", self.on_exit)
         atexit.register(self._cleanup)
@@ -195,6 +195,9 @@ class App:
                              width=16, height=1, command=self.toggle, state=tk.DISABLED)
         self.btn.pack(pady=14)
 
+        tk.Button(self.root, text="Settings", font=("Segoe UI", 9),
+                  command=self._open_settings, width=10).pack(pady=(0, 8))
+
         # --- System Status ---
         status_frame = tk.LabelFrame(self.root, text="System Status", font=("Segoe UI", 8), padx=6, pady=4)
         status_frame.pack(fill="x", padx=12, pady=(0, 8))
@@ -204,9 +207,6 @@ class App:
         self.status_model.pack(fill="x")
         self.status_extra = tk.Label(status_frame, text="Effort: -", font=("Consolas", 8), fg="#666", anchor="w", justify="left")
         self.status_extra.pack(fill="x")
-
-        tk.Button(self.root, text="Settings", font=("Segoe UI", 8),
-                  command=self._open_settings).pack(pady=(0, 4))
 
         self._on_mode_change()
         self.root.after(300, lambda: self.btn.config(state=tk.NORMAL))
