@@ -28,6 +28,18 @@
 4. 选择**模型**：V4 Flash / V4 Pro / Flash+Think(R1)
 5. 点击 **Turn ON**
 
+## 截图
+
+### 主窗口
+
+![主窗口](screenshots/main_window.png)
+
+顶栏绿灯表示 API Key 已配置；红点表示未配置，点击顶栏或 Edit 打开设置。
+
+### 设置界面
+
+![设置界面](screenshots/settings_dialog.png)
+
 ## 两种模式
 
 | | Direct（推荐） | Proxy（LiteLLM） |
