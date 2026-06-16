@@ -104,6 +104,16 @@ Claude Code  ────→ localhost:4000 (LiteLLM) ────→ api.deepse
 
 ## 迭代记录
 
+### v1.2 (2026-06-16)
+
+**新增**
+- 用户自配置 API Key：顶栏状态栏实时显示配置状态（绿/红点），点按打开设置弹窗
+- Key 持久化至 `config.json`，启动时无 Key 仅红点提醒，不再强制弹窗
+- `.gitignore` 排除 `config.json` 防止意外提交
+
+**修复**
+- 移除代码中硬编码的 API Key，`litellm_config.yaml` 改用占位符，Proxy 启动时动态注入
+
 ### v1.1 (2026-06-06)
 
 **新增**
@@ -116,15 +126,6 @@ Claude Code  ────→ localhost:4000 (LiteLLM) ────→ api.deepse
 - 所有环境变量操作改为后台线程，避免界面卡顿
 - 关闭窗口时 atexit 双重保险清理
 
-**Claude Code 切换行为（测试总结）**
-1. CC 启动时读环境变量，运行时不重读
-2. 先开代理再开 CC → 正常使用
-3. 代理 OFF 时开 CC → 走 Anthropic 原生 API（需登录）
-4. 先开 CC 再开代理 → 不生效
-5. Direct 模式下开关代理不影响已运行的 CC（远端始终在线）
-6. Proxy 关代理 → CC 立即断连，需重开代理 + 30 秒重试
-7. Proxy → Direct 切换 → CC 断连；Direct → Proxy 切换 → CC 不受影响（保持原连接）
-
 ### v1.0 (2026-06-04)
 
 - 基于 LiteLLM 的 Proxy 模式
@@ -132,6 +133,33 @@ Claude Code  ────→ localhost:4000 (LiteLLM) ────→ api.deepse
 - 全局环境变量设置
 - 窗口关闭自动清理
 - PowerShell profile 集成
+
+## 测试情况
+
+### Direct 模式
+
+- 稳定通过。`api.deepseek.com/anthropic` 原生 Anthropic 协议，tool-use / thinking / web-search 均可用
+- V4 Flash 默认开启 thinking，小请求可能 thinking tokens 吃满导致无文本输出
+
+### Proxy 模式
+
+- 端口残留已修复，功能正常
+- LiteLLM 启动慢（10-15 秒才绑定端口），需等待
+- LiteLLM 1.87 在 Windows 上启动峰值内存 500MB+
+
+### Claude Code 切换行为
+
+| 场景 | 结果 |
+|---|---|
+| 先开代理 → 开 CC | 正常使用 |
+| 代理 OFF → 开 CC | 走 Anthropic 原生 API（需登录） |
+| 先开 CC → 开代理 | 不生效（CC 启动时读环境变量，运行时不重读） |
+| Direct 运行中开关代理 | 不影响（远端始终在线） |
+| Proxy 运行中关代理 | CC 立即断连，需重开代理 + 30 秒重试 |
+| Proxy → Direct 切换（CC 运行中） | CC 断连（localhost:4000 消失） |
+| Direct → Proxy 切换（CC 运行中） | CC 不受影响（保持原连接） |
+
+**终端 vs VS Code 插件**：终端版断连后自动重试需 30 秒+；VS Code 插件略快。关闭代理后插件跳转登录页。建议优先使用 Direct 模式。
 
 ## 依赖
 
